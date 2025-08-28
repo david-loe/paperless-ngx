@@ -146,3 +146,10 @@ class TestTikaParser:
         assert form_field_found
 
         httpx_mock.reset()
+
+    def test_additional_mime_types(settings):
+        settings.TIKA_ADDITIONAL_MIME_TYPES = {"application/x-test": ".test"}
+        from paperless_tika.signals import tika_consumer_declaration
+
+        declaration = tika_consumer_declaration(None)
+        assert declaration["mime_types"]["application/x-test"] == ".test"

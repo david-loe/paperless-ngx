@@ -1289,6 +1289,9 @@ TIKA_GOTENBERG_ENDPOINT = os.getenv(
     "PAPERLESS_TIKA_GOTENBERG_ENDPOINT",
     "http://localhost:3000",
 )
+TIKA_ADDITIONAL_MIME_TYPES: Final[dict[str, str]] = dict(
+    json.loads(os.getenv("PAPERLESS_TIKA_ADDITIONAL_MIME_TYPES", "{}")),
+)
 
 if TIKA_ENABLED:
     INSTALLED_APPS.append("paperless_tika.apps.PaperlessTikaConfig")

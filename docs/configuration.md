@@ -241,12 +241,20 @@ configure their endpoints, and enable the feature.
 
     Defaults to "<http://localhost:3000>".
 
+#### [`PAPERLESS_TIKA_ADDITIONAL_MIME_TYPES=<json dict>`](#PAPERLESS_TIKA_ADDITIONAL_MIME_TYPES) {#PAPERLESS_TIKA_ADDITIONAL_MIME_TYPES}
+
+: Define additional MIME types that the Tika parser should handle.
+
+    Syntax: `{"<mime_type>": "<extension>" [, ...]}`
+
+    Defaults to `{}`.
+
 If you run paperless on docker, you can add those services to the
 Docker Compose file (see the provided
 [`docker-compose.sqlite-tika.yml`](https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.sqlite-tika.yml)
 file for reference).
 
-Add all three configuration parameters to your configuration. If using
+Add all the above configuration parameters to your configuration. If using
 Docker, this may be the `environment` key of the webserver or a
 `docker-compose.env` file. Bare metal installations may have a `.conf` file
 containing the configuration parameters. Be sure to use the correct format
