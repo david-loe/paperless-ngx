@@ -516,6 +516,34 @@ class SavedViewFilterRule(models.Model):
         return f"SavedViewFilterRule: {self.rule_type} : {self.value}"
 
 
+class WorkflowTriggerFilterRule(models.Model):
+    workflow_trigger = models.ForeignKey(
+        "WorkflowTrigger",
+        on_delete=models.CASCADE,
+        related_name="filter_rules",
+        verbose_name=_("workflow trigger"),
+    )
+
+    rule_type = models.PositiveIntegerField(
+        _("rule type"),
+        choices=SavedViewFilterRule.RULE_TYPES,
+    )
+
+    value = models.CharField(
+        _("value"),
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = _("workflow trigger filter rule")
+        verbose_name_plural = _("workflow trigger filter rules")
+
+    def __str__(self) -> str:
+        return f"WorkflowTriggerFilterRule: {self.rule_type} : {self.value}"
+
+
 # Extending User Model Using a One-To-One Link
 class UiSettings(models.Model):
     user = models.OneToOneField(

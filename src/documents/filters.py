@@ -20,6 +20,7 @@ from django.db.models import Sum
 from django.db.models import Value
 from django.db.models import When
 from django.db.models.functions import Cast
+from django.http import QueryDict
 from django.utils.translation import gettext_lazy as _
 from django_filters import DateFilter
 from django_filters.rest_framework import BooleanFilter
@@ -774,6 +775,97 @@ class DocumentFilterSet(FilterSet):
             "owner__id": ID_KWARGS,
             "custom_fields": ["icontains"],
         }
+
+
+# Mapping of SavedView filter rule types to query parameters for DocumentFilterSet
+FILTER_RULE_TYPE_MAP: dict[int, dict[str, str | bool]] = {
+    0: {"filtervar": "title__icontains", "multi": False},
+    1: {"filtervar": "content__icontains", "multi": False},
+    2: {"filtervar": "archive_serial_number", "multi": False},
+    3: {
+        "filtervar": "correspondent__id",
+        "isnull_filtervar": "correspondent__isnull",
+        "multi": False,
+    },
+    4: {
+        "filtervar": "document_type__id",
+        "isnull_filtervar": "document_type__isnull",
+        "multi": False,
+    },
+    5: {"filtervar": "is_in_inbox", "multi": False},
+    6: {"filtervar": "tags__id__all", "multi": True},
+    7: {"filtervar": "is_tagged", "multi": False},
+    8: {"filtervar": "created__date__lt", "multi": False},
+    9: {"filtervar": "created__date__gt", "multi": False},
+    10: {"filtervar": "created__year", "multi": False},
+    11: {"filtervar": "created__month", "multi": False},
+    12: {"filtervar": "created__day", "multi": False},
+    13: {"filtervar": "added__date__lt", "multi": False},
+    14: {"filtervar": "added__date__gt", "multi": False},
+    15: {"filtervar": "modified__date__lt", "multi": False},
+    16: {"filtervar": "modified__date__gt", "multi": False},
+    17: {"filtervar": "tags__id__none", "multi": True},
+    18: {"filtervar": "archive_serial_number__isnull", "multi": False},
+    19: {"filtervar": "title_content", "multi": False},
+    20: {"filtervar": "query", "multi": False},
+    21: {"filtervar": "more_like_id", "multi": False},
+    22: {"filtervar": "tags__id__in", "multi": True},
+    23: {"filtervar": "archive_serial_number__gt", "multi": False},
+    24: {"filtervar": "archive_serial_number__lt", "multi": False},
+    25: {
+        "filtervar": "storage_path__id",
+        "isnull_filtervar": "storage_path__isnull",
+        "multi": False,
+    },
+    26: {"filtervar": "correspondent__id__in", "multi": True},
+    27: {"filtervar": "correspondent__id__none", "multi": True},
+    28: {"filtervar": "document_type__id__in", "multi": True},
+    29: {"filtervar": "document_type__id__none", "multi": True},
+    30: {"filtervar": "storage_path__id__in", "multi": True},
+    31: {"filtervar": "storage_path__id__none", "multi": True},
+    32: {
+        "filtervar": "owner__id",
+        "isnull_filtervar": "owner__isnull",
+        "multi": False,
+    },
+    33: {"filtervar": "owner__id__in", "multi": True},
+    34: {"filtervar": "owner__isnull", "multi": False},
+    35: {"filtervar": "owner__id__none", "multi": True},
+    36: {"filtervar": "custom_fields__icontains", "multi": False},
+    37: {"filtervar": "shared_by__id", "multi": False},
+    38: {"filtervar": "custom_fields__id__all", "multi": True},
+    39: {"filtervar": "custom_fields__id__in", "multi": True},
+    40: {"filtervar": "custom_fields__id__none", "multi": True},
+    41: {"filtervar": "has_custom_fields", "multi": False},
+    42: {"filtervar": "custom_field_query", "multi": False},
+    43: {"filtervar": "created__date__lte", "multi": False},
+    44: {"filtervar": "created__date__gte", "multi": False},
+    45: {"filtervar": "added__date__lte", "multi": False},
+    46: {"filtervar": "added__date__gte", "multi": False},
+    47: {"filtervar": "mime_type", "multi": False},
+}
+
+
+def filter_queryset_by_filter_rules(queryset, filter_rules):
+    params = QueryDict(mutable=True)
+    for rule in filter_rules:
+        cfg = FILTER_RULE_TYPE_MAP.get(rule.rule_type)
+        if not cfg:
+            continue
+        isnull_var = cfg.get("isnull_filtervar")
+        if isnull_var and (rule.value is None or rule.value == ""):
+            params[isnull_var] = "1"
+            continue
+        if isnull_var:
+            params[isnull_var] = "0"
+        filtervar = cfg["filtervar"]
+        value = "" if rule.value is None else str(rule.value)
+        if cfg.get("multi") and filtervar in params:
+            params[filtervar] = f"{params[filtervar]},{value}"
+        else:
+            params[filtervar] = value
+    filterset = DocumentFilterSet(params, queryset=queryset)
+    return filterset.qs
 
 
 class ShareLinkFilterSet(FilterSet):

@@ -2591,6 +2591,40 @@ class TestWorkflows(
 
         mock_email_send.assert_called_once()
 
+    def test_document_matches_workflow_filter_rules(self):
+        trigger = WorkflowTrigger.objects.create(
+            type=WorkflowTrigger.WorkflowTriggerType.DOCUMENT_ADDED,
+        )
+        trigger.filter_rules.create(rule_type=0, value="sample")
+        w = Workflow.objects.create(name="Workflow 1", order=0)
+        w.triggers.add(trigger)
+
+        doc = Document.objects.create(
+            title="sample document",
+            correspondent=self.c,
+            original_filename="sample.pdf",
+        )
+        self.assertTrue(
+            document_matches_workflow(
+                doc,
+                w,
+                WorkflowTrigger.WorkflowTriggerType.DOCUMENT_ADDED,
+            ),
+        )
+
+        doc2 = Document.objects.create(
+            title="other document",
+            correspondent=self.c,
+            original_filename="other.pdf",
+        )
+        self.assertFalse(
+            document_matches_workflow(
+                doc2,
+                w,
+                WorkflowTrigger.WorkflowTriggerType.DOCUMENT_ADDED,
+            ),
+        )
+
     @override_settings(
         PAPERLESS_URL="http://localhost:8000",
     )

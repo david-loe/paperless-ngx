@@ -1,3 +1,4 @@
+import { FilterRule } from './filter-rule'
 import { ObjectWithId } from './object-with-id'
 
 export enum DocumentSource {
@@ -53,4 +54,6 @@ export interface WorkflowTrigger extends ObjectWithId {
   schedule_date_field?: ScheduleDateField
 
   schedule_date_custom_field?: number // CustomField.id
+
+  filter_rules?: FilterRule[]
 }

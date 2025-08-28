@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from documents.data_models import ConsumableDocument
 from documents.data_models import DocumentSource
+from documents.filters import filter_queryset_by_filter_rules
 from documents.models import Correspondent
 from documents.models import Document
 from documents.models import DocumentType
@@ -389,6 +390,15 @@ def existing_document_matches_workflow(
         )
         trigger_matched = False
 
+    if trigger.filter_rules.all().count() > 0:
+        qs = filter_queryset_by_filter_rules(
+            Document.objects.filter(pk=document.pk),
+            trigger.filter_rules.all(),
+        )
+        if qs.count() == 0:
+            reason = "Document does not match filter rules"
+            trigger_matched = False
+
     return (trigger_matched, reason)
 
 
@@ -422,6 +432,12 @@ def prefilter_documents_by_workflowtrigger(
         regex = fnmatch_translate(trigger.filter_filename).lstrip("^").rstrip("$")
         regex = f"(?i){regex}"
         documents = documents.filter(original_filename__regex=regex)
+
+    if trigger.filter_rules.all().count() > 0:
+        documents = filter_queryset_by_filter_rules(
+            documents,
+            trigger.filter_rules.all(),
+        )
 
     return documents
 

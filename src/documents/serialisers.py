@@ -60,6 +60,7 @@ from documents.models import WorkflowAction
 from documents.models import WorkflowActionEmail
 from documents.models import WorkflowActionWebhook
 from documents.models import WorkflowTrigger
+from documents.models import WorkflowTriggerFilterRule
 from documents.parsers import is_mime_type_supported
 from documents.permissions import get_groups_with_only_permission
 from documents.permissions import set_permissions_for_object
@@ -1174,6 +1175,12 @@ class SavedViewFilterRuleSerializer(serializers.ModelSerializer):
         fields = ["rule_type", "value"]
 
 
+class WorkflowTriggerFilterRuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkflowTriggerFilterRule
+        fields = ["rule_type", "value"]
+
+
 class SavedViewSerializer(OwnedObjectSerializer):
     filter_rules = SavedViewFilterRuleSerializer(many=True)
 
@@ -2039,6 +2046,8 @@ class WorkflowTriggerSerializer(serializers.ModelSerializer):
         label="Trigger Type",
     )
 
+    filter_rules = WorkflowTriggerFilterRuleSerializer(many=True, required=False)
+
     class Meta:
         model = WorkflowTrigger
         fields = [
@@ -2054,6 +2063,7 @@ class WorkflowTriggerSerializer(serializers.ModelSerializer):
             "filter_has_tags",
             "filter_has_correspondent",
             "filter_has_document_type",
+            "filter_rules",
             "schedule_offset_days",
             "schedule_is_recurring",
             "schedule_recurring_interval_days",
@@ -2101,11 +2111,29 @@ class WorkflowTriggerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         WorkflowTriggerSerializer.normalize_workflow_trigger_sources(validated_data)
-        return super().create(validated_data)
+        rules_data = validated_data.pop("filter_rules", [])
+        trigger = super().create(validated_data)
+        for rule in rules_data:
+            WorkflowTriggerFilterRule.objects.create(
+                workflow_trigger=trigger,
+                **rule,
+            )
+        return trigger
 
     def update(self, instance, validated_data):
         WorkflowTriggerSerializer.normalize_workflow_trigger_sources(validated_data)
-        return super().update(instance, validated_data)
+        rules_data = validated_data.pop("filter_rules", None)
+        trigger = super().update(instance, validated_data)
+        if rules_data is not None:
+            WorkflowTriggerFilterRule.objects.filter(
+                workflow_trigger=trigger,
+            ).delete()
+            for rule in rules_data:
+                WorkflowTriggerFilterRule.objects.create(
+                    workflow_trigger=trigger,
+                    **rule,
+                )
+        return trigger
 
 
 class WorkflowActionEmailSerializer(serializers.ModelSerializer):
@@ -2271,6 +2299,7 @@ class WorkflowSerializer(serializers.ModelSerializer):
         if triggers is not None and triggers is not serializers.empty:
             for trigger in triggers:
                 filter_has_tags = trigger.pop("filter_has_tags", None)
+                filter_rules = trigger.pop("filter_rules", None)
                 # Convert sources to strings to handle django-multiselectfield v1.0 changes
                 WorkflowTriggerSerializer.normalize_workflow_trigger_sources(trigger)
                 trigger_instance, _ = WorkflowTrigger.objects.update_or_create(
@@ -2279,6 +2308,15 @@ class WorkflowSerializer(serializers.ModelSerializer):
                 )
                 if filter_has_tags is not None:
                     trigger_instance.filter_has_tags.set(filter_has_tags)
+                if filter_rules is not None:
+                    WorkflowTriggerFilterRule.objects.filter(
+                        workflow_trigger=trigger_instance,
+                    ).delete()
+                    for rule in filter_rules:
+                        WorkflowTriggerFilterRule.objects.create(
+                            workflow_trigger=trigger_instance,
+                            **rule,
+                        )
                 set_triggers.append(trigger_instance)
 
         if actions is not None and actions is not serializers.empty:

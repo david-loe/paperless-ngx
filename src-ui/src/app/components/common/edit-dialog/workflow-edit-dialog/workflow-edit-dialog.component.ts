@@ -45,6 +45,7 @@ import { StoragePathService } from 'src/app/services/rest/storage-path.service'
 import { UserService } from 'src/app/services/rest/user.service'
 import { WorkflowService } from 'src/app/services/rest/workflow.service'
 import { SettingsService } from 'src/app/services/settings.service'
+import { FilterEditorComponent } from '../../../document-list/filter-editor/filter-editor.component'
 import { ConfirmButtonComponent } from '../../confirm-button/confirm-button.component'
 import { CheckComponent } from '../../input/check/check.component'
 import { CustomFieldsValuesComponent } from '../../input/custom-fields-values/custom-fields-values.component'
@@ -153,6 +154,7 @@ const TRIGGER_MATCHING_ALGORITHMS = MATCHING_ALGORITHMS.filter(
     TextAreaComponent,
     TagsComponent,
     CustomFieldsValuesComponent,
+    FilterEditorComponent,
     PermissionsGroupComponent,
     PermissionsUserComponent,
     ConfirmButtonComponent,
@@ -412,6 +414,7 @@ export class WorkflowEditDialogComponent
         filter_has_document_type: new FormControl(
           trigger.filter_has_document_type
         ),
+        filter_rules: new FormControl(trigger.filter_rules ?? []),
         schedule_offset_days: new FormControl(trigger.schedule_offset_days),
         schedule_is_recurring: new FormControl(trigger.schedule_is_recurring),
         schedule_recurring_interval_days: new FormControl(
@@ -536,6 +539,7 @@ export class WorkflowEditDialogComponent
       filter_has_tags: [],
       filter_has_correspondent: null,
       filter_has_document_type: null,
+      filter_rules: [],
       matching_algorithm: MATCH_NONE,
       match: '',
       is_insensitive: true,
