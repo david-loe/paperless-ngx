@@ -1,5 +1,5 @@
 <div class="btn-group w-100" ngbDropdown role="group" [popperOptions]="popperOptions" [placement]="placement">
-  <button class="btn btn-sm" id="dropdown{{title}}" ngbDropdownToggle [ngClass]="createdDateTo || createdDateFrom ? 'btn-primary' : 'btn-outline-primary'" [disabled]="disabled">
+  <button type="button" class="btn btn-sm" id="dropdown{{title}}" ngbDropdownToggle [ngClass]="createdDateTo || createdDateFrom ? 'btn-primary' : 'btn-outline-primary'" [disabled]="disabled">
     <i-bs width="1em" height="1em" name="calendar-event-fill"></i-bs>
     <div class="d-none d-sm-inline">&nbsp;{{title}}</div>
     <pngx-clearable-badge [selected]="isActive" (cleared)="reset()"></pngx-clearable-badge><span class="visually-hidden">selected</span>
@@ -49,8 +49,8 @@
           </button>
           <ng-template #createdFromFooterTemplate>
             <div class="btn-group-xs border-top p-2 d-flex">
-              <button class="btn btn-primary" (click)="createdDateFrom = today; onChangeDebounce()" i18n>Today</button>
-              <button class="btn btn-secondary ms-auto" (click)="createdDateFromPicker.close()" i18n>Close</button>
+              <button type="button" class="btn btn-primary" (click)="createdDateFrom = today; onChangeDebounce()" i18n>Today</button>
+              <button type="button" class="btn btn-secondary ms-auto" (click)="createdDateFromPicker.close()" i18n>Close</button>
             </div>
           </ng-template>
         </div>
@@ -73,8 +73,8 @@
           </button>
           <ng-template #createdToFooterTemplate>
             <div class="btn-group-xs border-top p-2 d-flex">
-              <button class="btn btn-primary" (click)="createdDateTo = today; onChangeDebounce()" i18n>Today</button>
-              <button class="btn btn-secondary ms-auto" (click)="createdDateToPicker.close()" i18n>Close</button>
+              <button type="button" class="btn btn-primary" (click)="createdDateTo = today; onChangeDebounce()" i18n>Today</button>
+              <button type="button" class="btn btn-secondary ms-auto" (click)="createdDateToPicker.close()" i18n>Close</button>
             </div>
           </ng-template>
         </div>
@@ -125,8 +125,8 @@
           </button>
           <ng-template #addedFromFooterTemplate>
             <div class="btn-group-xs border-top p-2 d-flex">
-              <button class="btn btn-primary" (click)="addedDateFrom = today; onChangeDebounce()" i18n>Today</button>
-              <button class="btn btn-secondary ms-auto" (click)="addedDateFromPicker.close()" i18n>Close</button>
+              <button type="button" class="btn btn-primary" (click)="addedDateFrom = today; onChangeDebounce()" i18n>Today</button>
+              <button type="button" class="btn btn-secondary ms-auto" (click)="addedDateFromPicker.close()" i18n>Close</button>
             </div>
           </ng-template>
         </div>
@@ -149,8 +149,8 @@
           </button>
           <ng-template #addedToFooterTemplate>
             <div class="btn-group-xs border-top p-2 d-flex">
-              <button class="btn btn-primary" (click)="addedDateTo = today; onChangeDebounce()" i18n>Today</button>
-              <button class="btn btn-secondary ms-auto" (click)="addedDateToPicker.close()" i18n>Close</button>
+              <button type="button" class="btn btn-primary" (click)="addedDateTo = today; onChangeDebounce()" i18n>Today</button>
+              <button type="button" class="btn btn-secondary ms-auto" (click)="addedDateToPicker.close()" i18n>Close</button>
             </div>
           </ng-template>
         </div>

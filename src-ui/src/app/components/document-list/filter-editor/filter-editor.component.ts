@@ -1217,7 +1217,7 @@ export class FilterEditorComponent
   resetSelected() {
     this.textFilterTarget = TEXT_FILTER_TARGET_TITLE_CONTENT
     this.documentService.searchQuery = ''
-    this.filterRules = this._unmodifiedFilterRules
+    this.filterRules = this._unmodifiedFilterRules.map((r) => ({ ...r }))
     this.updateRules()
   }
 

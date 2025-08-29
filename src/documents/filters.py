@@ -704,16 +704,29 @@ class DocumentFilterSet(FilterSet):
     tags__id__in = ObjectFilter(field_name="tags", in_list=True)
 
     correspondent__id__none = ObjectFilter(field_name="correspondent", exclude=True)
+    correspondent__id__in = ObjectFilter(
+        field_name="correspondent",
+        in_list=True,
+    )
 
     document_type__id__none = ObjectFilter(field_name="document_type", exclude=True)
+    document_type__id__in = ObjectFilter(
+        field_name="document_type",
+        in_list=True,
+    )
 
     storage_path__id__none = ObjectFilter(field_name="storage_path", exclude=True)
+    storage_path__id__in = ObjectFilter(
+        field_name="storage_path",
+        in_list=True,
+    )
 
     is_in_inbox = InboxFilter()
 
     title_content = TitleContentFilter()
 
     owner__id__none = ObjectFilter(field_name="owner", exclude=True)
+    owner__id__in = ObjectFilter(field_name="owner", in_list=True)
 
     custom_fields__icontains = CustomFieldsFilter()
 

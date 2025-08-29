@@ -2596,6 +2596,10 @@ class TestWorkflows(
             type=WorkflowTrigger.WorkflowTriggerType.DOCUMENT_ADDED,
         )
         trigger.filter_rules.create(rule_type=0, value="sample")
+        trigger.filter_rules.create(
+            rule_type=26,
+            value=str(self.c.pk),
+        )
         w = Workflow.objects.create(name="Workflow 1", order=0)
         w.triggers.add(trigger)
 
@@ -2603,6 +2607,7 @@ class TestWorkflows(
             title="sample document",
             correspondent=self.c,
             original_filename="sample.pdf",
+            checksum="1" * 32,
         )
         self.assertTrue(
             document_matches_workflow(
@@ -2613,9 +2618,10 @@ class TestWorkflows(
         )
 
         doc2 = Document.objects.create(
-            title="other document",
-            correspondent=self.c,
+            title="sample document",
+            correspondent=self.c2,
             original_filename="other.pdf",
+            checksum="2" * 32,
         )
         self.assertFalse(
             document_matches_workflow(
