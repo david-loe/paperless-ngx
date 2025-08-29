@@ -176,9 +176,9 @@
         <div class="col-md-6">
           <pngx-filter-editor
             [show]="true"
-            [filterRules]="formGroup.get('filter_rules').value"
-            [unmodifiedFilterRules]="formGroup.get('filter_rules').value"
-            (filterRulesChange)="formGroup.get('filter_rules').setValue($event)"
+            [filterRules]="formGroup.get('filter_rules').value || []"
+            [unmodifiedFilterRules]="trigger.filter_rules || []"
+            (filterRulesChange)="formGroup.get('filter_rules').setValue($event); trigger.filter_rules = $event"
           ></pngx-filter-editor>
         </div>
       }

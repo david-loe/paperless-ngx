@@ -1,5 +1,5 @@
 <div class="btn-group w-100" ngbDropdown role="group" (openChange)="dropdownOpenChange($event)" #dropdown="ngbDropdown" (keydown)="listKeyDown($event)" [popperOptions]="popperOptions">
-  <button class="btn btn-sm" id="dropdown_{{name}}" ngbDropdownToggle [ngClass]="!editing && selectionModel.selectionSize() > 0 ? 'btn-primary' : 'btn-outline-primary'" [disabled]="disabled">
+  <button type="button" class="btn btn-sm" id="dropdown_{{name}}" ngbDropdownToggle [ngClass]="!editing && selectionModel.selectionSize() > 0 ? 'btn-primary' : 'btn-outline-primary'" [disabled]="disabled">
     <i-bs name="{{icon}}"></i-bs>
     <div class="d-none d-sm-inline">&nbsp;{{title}}</div>
     @if (!editing && selectionModel.totalCount > 0) {
@@ -54,20 +54,20 @@
       }
       @if (editing) {
         @if ((selectionModel.items | filter: filterText:'name').length === 0 && createRef !== undefined) {
-          <button class="list-group-item list-group-item-action bg-light" (click)="createClicked()" [disabled]="disabled">
+          <button type="button" class="list-group-item list-group-item-action bg-light" (click)="createClicked()" [disabled]="disabled">
             <small class="ms-2"><ng-container i18n>Create</ng-container> "{{filterText}}"</small>
             <i-bs width="1.5em" height="1em" name="plus"></i-bs>
           </button>
         }
         @if ((selectionModel.items | filter: filterText:'name').length > 0) {
-          <button class="list-group-item list-group-item-action bg-light d-flex align-items-center" (click)="applyClicked()" [disabled]="!modelIsDirty || disabled">
+          <button type="button" class="list-group-item list-group-item-action bg-light d-flex align-items-center" (click)="applyClicked()" [disabled]="!modelIsDirty || disabled">
             <small class="ms-2" [ngClass]="{'fw-bold': modelIsDirty}" i18n>Apply</small>
             <i-bs width="1.5em" height="1em" name="arrow-right"></i-bs>
           </button>
         }
       }
       @if (extraButtonTitle) {
-        <button class="list-group-item list-group-item-action bg-light d-flex align-items-center" (click)="extraButtonClicked($event)" [disabled]="disabled">
+        <button type="button" class="list-group-item list-group-item-action bg-light d-flex align-items-center" (click)="extraButtonClicked($event)" [disabled]="disabled">
           <small class="ms-2 fw-bold">{{extraButtonTitle}}</small>
           <i-bs width="1.5em" height="1em" name="arrow-right"></i-bs>
         </button>
