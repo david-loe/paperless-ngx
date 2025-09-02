@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnInit,
@@ -14,6 +15,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms'
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap'
 import { NgxBootstrapIconsModule } from 'ngx-bootstrap-icons'
 import { takeUntil } from 'rxjs'
 import {
@@ -32,12 +34,14 @@ import { EditDialogComponent, EditDialogMode } from '../edit-dialog.component'
   selector: 'pngx-custom-field-edit-dialog',
   templateUrl: './custom-field-edit-dialog.component.html',
   styleUrls: ['./custom-field-edit-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     SelectComponent,
     TextComponent,
     FormsModule,
     ReactiveFormsModule,
     NgxBootstrapIconsModule,
+    NgbPaginationModule,
   ],
 })
 export class CustomFieldEditDialogComponent
@@ -49,9 +53,22 @@ export class CustomFieldEditDialogComponent
   @ViewChildren('selectOption')
   private selectOptionInputs: QueryList<ElementRef>
 
-  private get selectOptions(): FormArray {
-    return (this.objectForm.controls.extra_data as FormGroup).controls
-      .select_options as FormArray
+  pageSize = 25
+  private _page = 1
+  private allOptions: { label: string; id: string }[] = []
+  private pauseFocus = false
+
+  get page() {
+    return this._page
+  }
+  set page(p: number) {
+    this.syncBackToAllOptions()
+    this._page = p
+    this.rebuildPage()
+  }
+
+  get selectOptions(): FormArray {
+    return this.objectForm.get('extra_data.select_options') as FormArray
   }
 
   constructor() {
@@ -64,20 +81,13 @@ export class CustomFieldEditDialogComponent
   ngOnInit(): void {
     super.ngOnInit()
     if (this.typeFieldDisabled) {
-      this.objectForm.get('data_type').disable()
+      this.objectForm.get('data_type')!.disable()
     }
     if (this.object?.data_type === CustomFieldDataType.Select) {
-      this.selectOptions.clear()
-      this.object.extra_data.select_options
-        .filter((option) => option)
-        .forEach((option) =>
-          this.selectOptions.push(
-            new FormGroup({
-              label: new FormControl(option.label),
-              id: new FormControl(option.id),
-            })
-          )
-        )
+      this.allOptions = (this.object.extra_data?.select_options ?? []).filter(
+        Boolean
+      )
+      this.page = 1
     }
   }
 
@@ -85,7 +95,9 @@ export class CustomFieldEditDialogComponent
     this.selectOptionInputs.changes
       .pipe(takeUntil(this.unsubscribeNotifier))
       .subscribe(() => {
-        this.selectOptionInputs.last?.nativeElement.focus()
+        if (!this.pauseFocus) {
+          this.selectOptionInputs.last?.nativeElement.focus()
+        }
       })
   }
 
@@ -117,12 +129,66 @@ export class CustomFieldEditDialogComponent
   }
 
   public addSelectOption() {
-    this.selectOptions.push(
-      new FormGroup({ label: new FormControl(null), id: new FormControl(null) })
-    )
+    this.syncBackToAllOptions()
+    this.allOptions.push({ label: '', id: crypto.randomUUID() })
+    this.page = Math.ceil(this.allOptions.length / this.pageSize)
   }
 
-  public removeSelectOption(index: number) {
-    this.selectOptions.removeAt(index)
+  public removeSelectOption(indexOnPage: number) {
+    this.syncBackToAllOptions()
+    const globalIndex = (this.page - 1) * this.pageSize + indexOnPage
+    this.allOptions.splice(globalIndex, 1)
+    const maxPage = Math.max(
+      1,
+      Math.ceil(this.allOptions.length / this.pageSize)
+    )
+    if (this.page > maxPage) {
+      this._page = maxPage
+    }
+    this.rebuildPage()
+  }
+
+  private rebuildPage() {
+    const start = (this.page - 1) * this.pageSize
+    const slice = this.allOptions.slice(start, start + this.pageSize)
+
+    this.pauseFocus = true
+    this.selectOptions.clear()
+    for (const o of slice) {
+      this.selectOptions.push(
+        new FormGroup({
+          label: new FormControl(o.label, { updateOn: 'blur' }),
+          id: new FormControl(o.id),
+        })
+      )
+    }
+    this.pauseFocus = false
+  }
+
+  private syncBackToAllOptions() {
+    const start = (this.page - 1) * this.pageSize
+    this.selectOptions.controls.forEach((fg, i) => {
+      const v = fg.value as { label: string; id: string }
+      this.allOptions[start + i] = v
+    })
+  }
+
+  override save() {
+    if (
+      this.objectForm.get('data_type')!.value === CustomFieldDataType.Select
+    ) {
+      this.syncBackToAllOptions()
+      const extra = this.objectForm.get('extra_data') as FormGroup
+      const original = this.selectOptions
+      extra.setControl('select_options', new FormControl(this.allOptions))
+      try {
+        super.save()
+      } finally {
+        extra.setControl('select_options', original)
+        this.rebuildPage()
+      }
+      return
+    }
+    super.save()
   }
 }
